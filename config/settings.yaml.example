@@ -1,0 +1,23 @@
+llm:
+  # The Ollama model tag to use (e.g., llama3, mistral)
+  model: "llama3"
+  # Temperature for generation (0.0 = deterministic)
+  temperature: 0.0
+  # Base URL for Ollama API
+  base_url: "http://localhost:11434"
+
+experiment:
+  # Number of syllogism puzzles to generate
+  dataset_size: 20
+  # Random seed for reproducibility
+  seed: 42
+  # HuggingFace model for calculating semantic similarity
+  embedding_model: "all-MiniLM-L6-v2"
+
+paths:
+  # Path to store generated dataset (unused currently if generated on fly)
+  data: "data/dataset.json"
+  # Path to save CSV results
+  results: "results/experiments.csv"
+  # Directory to save analysis plots
+  figures: "results/figures/"

@@ -1,0 +1,6 @@
+Item,Description,Quantity,Unit Cost (Cloud),Total Cost (Cloud),Total Cost (Local)
+Compute,GPU Instance (T4),5 hours,$0.50/hr,$2.50,$0.00
+Storage,Dataset & Models,1 GB,$0.10/GB,$0.10,$0.00
+Inference API,GPT-4o calls,1000 req,$0.005/req,$5.00,$0.00
+Development,Developer Hours,10 hours,$0.00,$0.00,$0.00
+Total,,-,-,$7.60,$0.00

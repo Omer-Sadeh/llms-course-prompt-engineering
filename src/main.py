@@ -57,7 +57,15 @@ def main():
 
     # Run Experiments
     try:
-        runner = ExperimentRunner()
+        from src.utils.metrics import SimilarityEvaluator
+        from src.utils.data_generator import SyllogismGenerator
+        
+        # Instantiate dependencies
+        evaluator = SimilarityEvaluator(model_name=config.experiment.embedding_model)
+        generator = SyllogismGenerator(seed=config.experiment.seed)
+        
+        # Inject dependencies
+        runner = ExperimentRunner(llm_client=client, evaluator=evaluator, generator=generator)
         runner.run_all_experiments()
     except Exception as e:
         logger.error(f"Experiment execution failed: {e}")

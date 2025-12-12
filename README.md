@@ -18,8 +18,8 @@ This project analyzes the effectiveness of different prompt engineering techniqu
 1. Clone the repository.
 2. Create a virtual environment:
    ```bash
-   python -m venv venv
-   source venv/bin/activate
+   python -m venv .venv
+   source .venv/bin/activate
    ```
 3. Install dependencies:
    ```bash
@@ -33,19 +33,60 @@ This project analyzes the effectiveness of different prompt engineering techniqu
    ```
 
 ## Configuration
-Edit `config/settings.yaml` to change the model name, dataset size, or other parameters.
+The project is configured via `config/settings.yaml`. You can copy `config/settings.yaml.example` to start.
+
+| Parameter | Description | Default |
+| :--- | :--- | :--- |
+| `llm.model` | The Ollama model to use | `llama3` |
+| `experiment.dataset_size` | Number of puzzles to generate | `10` |
+| `experiment.embedding_model` | HuggingFace model for metrics | `all-MiniLM-L6-v2` |
+
+See [config/settings.yaml.example](config/settings.yaml.example) for a full example.
 
 ## Usage
 Run the main experiment script:
 ```bash
 python src/main.py
 ```
-Results will be saved in `results/`.
+Results will be saved in `results/experiment_results.csv` and figures in `results/figures/`.
+
+## Screenshots
+
+### CLI Interface
+*(Placeholder: Image showing the CLI menu selecting a model)*
+```text
+Starting Prompt Engineering Analysis Project
+Available Models:
+1. llama3
+2. mistral
+Select a model (1-2) [default: llama3]: 1
+Selected model: llama3
+Running strategy: Baseline (Zero-Shot)
+...
+```
+
+### Results Visualization
+*(Placeholder: Bar chart showing Mean Vector Distance by Strategy)*
+
+## Extensibility
+You can easily add new strategies or metrics. See [docs/EXTENSIBILITY.md](docs/EXTENSIBILITY.md) for details.
+
+## Troubleshooting
+
+-   **Ollama Connection Error**: Ensure Ollama is running (`ollama serve`). Check if `http://localhost:11434` is accessible.
+-   **Model Not Found**: Run `ollama pull <model_name>` to download the model specified in config.
+-   **Memory Issues**: Reduce `dataset_size` in `config/settings.yaml` or use a smaller embedding model.
+
+## Costs
+See [COSTS.md](COSTS.md) for a breakdown of estimated resource usage and costs.
+
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on code style and testing.
 
 ## Testing
-Run unit tests:
+Run unit tests with coverage:
 ```bash
-pytest
+pytest --cov=src tests/
 ```
 
 ## Authors

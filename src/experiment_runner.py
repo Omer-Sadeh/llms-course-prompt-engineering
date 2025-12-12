@@ -3,9 +3,10 @@ Experiment Runner Module.
 """
 import logging
 import pandas as pd
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from tqdm import tqdm
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from src.config.config import config
 from src.utils.llm_client import OllamaClient
@@ -17,14 +18,17 @@ logger = logging.getLogger(__name__)
 class ExperimentRunner:
     """Orchestrates the prompt engineering experiments."""
 
-    def __init__(self):
-        self.llm = OllamaClient(
+    def __init__(self, llm_client: Optional[OllamaClient] = None, 
+                 evaluator: Optional[SimilarityEvaluator] = None, 
+                 generator: Optional[SyllogismGenerator] = None):
+        
+        self.llm = llm_client or OllamaClient(
             model=config.llm.model,
             temperature=config.llm.temperature,
             base_url=config.llm.base_url
         )
-        self.evaluator = SimilarityEvaluator(model_name=config.experiment.embedding_model)
-        self.generator = SyllogismGenerator(seed=config.experiment.seed)
+        self.evaluator = evaluator or SimilarityEvaluator(model_name=config.experiment.embedding_model)
+        self.generator = generator or SyllogismGenerator(seed=config.experiment.seed)
         
         # Prepare datasets
         self.dataset = self.generator.generate_dataset(size=config.experiment.dataset_size)
@@ -45,27 +49,40 @@ class ExperimentRunner:
 
         logger.info("Starting experiments...")
         
-        for name, strategy_func in strategies:
-            logger.info(f"Running strategy: {name}")
-            for item in tqdm(self.dataset, desc=name):
-                start_time = time.time()
-                response = strategy_func(item)
-                elapsed = time.time() - start_time
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            for name, strategy_func in strategies:
+                logger.info(f"Running strategy: {name}")
                 
-                distance = self.evaluator.calculate_distance(response, item['answer'])
+                # Submit all tasks for this strategy
+                future_to_item = {
+                    executor.submit(self._process_single_item, item, name, strategy_func): item 
+                    for item in self.dataset
+                }
                 
-                results.append({
-                    "strategy": name,
-                    "question": item['question'],
-                    "ground_truth": item['answer'],
-                    "model_output": response,
-                    "vector_distance": distance,
-                    "latency": elapsed
-                })
+                for future in tqdm(as_completed(future_to_item), total=len(self.dataset), desc=name):
+                    result = future.result()
+                    results.append(result)
 
         df = pd.DataFrame(results)
         self._save_results(df)
         return df
+
+    def _process_single_item(self, item: Dict[str, str], strategy_name: str, strategy_func) -> Dict[str, Any]:
+        """Process a single item with the given strategy."""
+        start_time = time.time()
+        response = strategy_func(item)
+        elapsed = time.time() - start_time
+        
+        distance = self.evaluator.calculate_distance(response, item['answer'])
+        
+        return {
+            "strategy": strategy_name,
+            "question": item['question'],
+            "ground_truth": item['answer'],
+            "model_output": response,
+            "vector_distance": distance,
+            "latency": elapsed
+        }
 
     def _save_results(self, df: pd.DataFrame):
         """Saves results to configured path."""
