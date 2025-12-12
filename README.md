@@ -53,12 +53,13 @@ Results will be saved in `results/experiment_results.csv` and figures in `result
 ## Screenshots
 
 ### CLI Interface
-*(Placeholder: Image showing the CLI menu selecting a model)*
 ```text
 Starting Prompt Engineering Analysis Project
+
 Available Models:
 1. llama3
 2. mistral
+
 Select a model (1-2) [default: llama3]: 1
 Selected model: llama3
 Running strategy: Baseline (Zero-Shot)
@@ -66,7 +67,13 @@ Running strategy: Baseline (Zero-Shot)
 ```
 
 ### Results Visualization
-*(Placeholder: Bar chart showing Mean Vector Distance by Strategy)*
+![Mean Vector Distance by Strategy](assets/results_plot.png)
+
+## Interactive Dashboard
+You can explore the results interactively using the Streamlit dashboard:
+```bash
+streamlit run src/dashboard.py
+```
 
 ## Extensibility
 You can easily add new strategies or metrics. See [docs/EXTENSIBILITY.md](docs/EXTENSIBILITY.md) for details.

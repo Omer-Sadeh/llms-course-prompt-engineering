@@ -4,6 +4,7 @@ Main Entry Point.
 import logging
 import sys
 import os
+import argparse
 
 # Add project root to path to allow running as a script
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -19,7 +20,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Prompt Engineering Analysis Experiment Runner",
+        epilog="Use this CLI to run experiments with different LLM models and prompting strategies."
+    )
+    return parser.parse_args()
+
 def main():
+    args = parse_args()
     logger.info("Starting Prompt Engineering Analysis Project")
     
     # Check Ollama connection first
