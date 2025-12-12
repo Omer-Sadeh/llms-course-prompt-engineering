@@ -5,6 +5,7 @@ import logging
 import sys
 import os
 import argparse
+from typing import Optional, List
 
 # Add project root to path to allow running as a script
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -27,29 +28,30 @@ def parse_args():
     )
     return parser.parse_args()
 
-def main():
-    args = parse_args()
-    logger.info("Starting Prompt Engineering Analysis Project")
-    
-    # Check Ollama connection first
+def setup_environment() -> Optional[OllamaClient]:
+    """Checks and sets up the Ollama environment."""
     client = OllamaClient(base_url=config.llm.base_url)
     if not client.check_connection():
         logger.warning("Ollama is not reachable.")
         if not start_ollama_server():
              logger.error("Could not start Ollama server. Please start it manually with `ollama serve`.")
-             sys.exit(1)
-    
-    # Model Selection
+             return None
+    return client
+
+def select_model(client: OllamaClient) -> None:
+    """Interactively selects the LLM model."""
     available_models = client.list_models()
     if not available_models:
         logger.error("No models found in Ollama. Please run `ollama pull <model>` to install one.")
         sys.exit(1)
         
-    print("\nAvailable Models:")
+    logger.info("Available Models:")
     for i, model in enumerate(available_models):
-        print(f"{i + 1}. {model}")
+        logger.info(f"{i + 1}. {model}")
         
     try:
+        # We still use input() for interaction, but log the prompt context
+        logger.info(f"Prompting user for model selection (default: {config.llm.model})")
         choice = input(f"\nSelect a model (1-{len(available_models)}) [default: {config.llm.model}]: ").strip()
         if choice:
             idx = int(choice) - 1
@@ -64,7 +66,8 @@ def main():
     except ValueError:
         logger.warning("Invalid input. Using default model.")
 
-    # Run Experiments
+def run_experiments(client: OllamaClient) -> None:
+    """Instantiates dependencies and runs experiments."""
     try:
         from src.utils.metrics import SimilarityEvaluator
         from src.utils.data_generator import SyllogismGenerator
@@ -79,14 +82,27 @@ def main():
     except Exception as e:
         logger.error(f"Experiment execution failed: {e}")
         sys.exit(1)
-        
-    # Analyze Results
+
+def generate_report() -> None:
+    """Analyzes results and generates a report."""
     try:
         analyzer = ResultAnalyzer()
         analyzer.generate_report()
     except Exception as e:
         logger.error(f"Analysis failed: {e}")
         sys.exit(1)
+
+def main():
+    _ = parse_args()
+    logger.info("Starting Prompt Engineering Analysis Project")
+    
+    client = setup_environment()
+    if not client:
+        sys.exit(1)
+    
+    select_model(client)
+    run_experiments(client)
+    generate_report()
 
     logger.info("Project workflow completed successfully.")
 

@@ -38,7 +38,7 @@ class ExperimentRunner:
         # Generate distinct few-shot examples
         self.few_shot_examples = self.generator.generate_dataset(size=4) # 2 valid, 2 invalid
 
-    def run_all_experiments(self) -> pd.DataFrame:
+    def run_all_experiments(self, max_workers: int = 4) -> pd.DataFrame:
         """Runs all defined strategies."""
         results = []
         
@@ -52,7 +52,7 @@ class ExperimentRunner:
 
         logger.info(f"Starting experiments with strategies: {[s[0] for s in strategies]}")
         
-        with ThreadPoolExecutor(max_workers=4) as executor:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             for name, strategy_instance in strategies:
                 logger.info(f"Running strategy: {name}")
                 

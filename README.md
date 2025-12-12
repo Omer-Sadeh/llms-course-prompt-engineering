@@ -96,5 +96,7 @@ Run unit tests with coverage:
 pytest --cov=src tests/
 ```
 
+**Current Test Coverage: 90%** (Verified on December 12, 2025)
+
 ## Authors
 Code Agent

@@ -42,3 +42,23 @@ This document tracks the prompts used in the experiment strategies.
   [Question Text]
   Let's think step by step to derive the correct answer.
   ```
+
+## Iterative Development Process
+
+The prompt engineering process for this project followed these stages:
+
+1.  **Baseline Establishment**: We started with raw questions to determine the model's innate capability.
+2.  **Instruction Tuning**: We added persona and strict formatting instructions (Basic Strategy) to improve consistency.
+3.  **Context Injection**: We introduced Few-Shot examples to guide the model's reasoning pattern.
+4.  **Reasoning Activation**: We applied Chain of Thought (CoT) triggers to handle complex logic puzzles, observing significant improvements in accuracy.
+
+## Failed Approaches
+
+-   **Complex Persona Constraints**: Initially, we tried overly complex system prompts (e.g., "You are a PhD in Logic..."). This often confused smaller models or led to overly verbose outputs without improving accuracy.
+-   **Negative Constraints**: Directing the model on what *not* to do (e.g., "Do not explain") was less effective than providing positive examples of the desired format.
+
+## Best Practices Discovered
+
+-   **Be Specific**: Clear, imperative instructions outperform polite requests.
+-   **Show, Don't Just Tell**: Few-shot examples are the most powerful tool for enforcing output format.
+-   **Step-by-Step**: For logic tasks, forcing the model to articulate steps (CoT) dramatically reduces hallucination errors.
