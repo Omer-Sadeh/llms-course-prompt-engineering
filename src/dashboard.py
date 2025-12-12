@@ -29,7 +29,7 @@ if not results_path.exists():
 df = pd.read_csv(results_path)
 
 # Sidebar
-st.sidebar.header("Filter Results")
+st.sidebar.header("Configuration")
 all_strategies = df['strategy'].unique()
 selected_strategies = st.sidebar.multiselect(
     "Select Strategies", 
@@ -43,29 +43,47 @@ if not selected_strategies:
 
 filtered_df = df[df['strategy'].isin(selected_strategies)]
 
-# Metrics
+# Metric Selection
+metric = st.sidebar.selectbox("Select Metric", ["vector_distance", "latency"])
+
+# Main Content
 st.header("Statistical Summary")
-summary = filtered_df.groupby('strategy')['vector_distance'].agg(['mean', 'std', 'count']).sort_values('mean')
+summary = filtered_df.groupby('strategy')[metric].agg(['mean', 'std', 'min', 'max', 'count']).sort_values('mean')
 st.dataframe(summary)
 
 # Plots
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Mean Distance Comparison")
+    st.subheader(f"Mean {metric.replace('_', ' ').title()}")
     fig1, ax1 = plt.subplots(figsize=(10, 6))
-    sns.barplot(data=filtered_df, x='strategy', y='vector_distance', errorbar='sd', palette='viridis', ax=ax1)
-    ax1.set_title("Mean Vector Distance (Lower is Better)")
+    sns.barplot(data=filtered_df, x='strategy', y=metric, errorbar='sd', palette='viridis', ax=ax1)
+    ax1.set_title(f"Mean {metric} (Lower is usually better)")
     plt.xticks(rotation=45)
     st.pyplot(fig1)
 
 with col2:
-    st.subheader("Distance Distribution")
+    st.subheader(f"{metric.replace('_', ' ').title()} Distribution")
     fig2, ax2 = plt.subplots(figsize=(10, 6))
-    sns.violinplot(data=filtered_df, x='strategy', y='vector_distance', palette='viridis', inner="quartile", ax=ax2)
-    ax2.set_title("Distribution of Distances")
+    sns.violinplot(data=filtered_df, x='strategy', y=metric, palette='viridis', inner="quartile", ax=ax2)
+    ax2.set_title(f"Distribution of {metric}")
     plt.xticks(rotation=45)
     st.pyplot(fig2)
+
+# Raw Data
+st.markdown("---")
+st.header("Raw Data")
+with st.expander("View Raw Data"):
+    st.dataframe(filtered_df)
+    
+    csv = filtered_df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        "Download CSV",
+        csv,
+        "experiment_results.csv",
+        "text/csv",
+        key='download-csv'
+    )
 
 st.markdown("---")
 st.markdown("### References")

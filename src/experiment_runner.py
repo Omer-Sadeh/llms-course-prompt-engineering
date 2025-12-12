@@ -12,6 +12,8 @@ from src.config.config import config
 from src.utils.llm_client import OllamaClient
 from src.utils.metrics import SimilarityEvaluator
 from src.utils.data_generator import SyllogismGenerator
+from src.core.registry import strategy_registry
+import src.strategies.definitions  # Import to register strategies
 
 logger = logging.getLogger(__name__)
 
@@ -40,40 +42,44 @@ class ExperimentRunner:
         """Runs all defined strategies."""
         results = []
         
-        strategies = [
-            ("Baseline (Zero-Shot)", self._strategy_baseline),
-            ("Basic Prompting", self._strategy_basic),
-            ("Few-Shot", self._strategy_few_shot),
-            ("Chain of Thought", self._strategy_cot)
-        ]
+        # Instantiate strategies from registry
+        strategies = []
+        for name in strategy_registry.list_all():
+            if name == "Few-Shot":
+                strategies.append((name, strategy_registry.create(name, examples=self.few_shot_examples)))
+            else:
+                strategies.append((name, strategy_registry.create(name)))
 
-        logger.info("Starting experiments...")
+        logger.info(f"Starting experiments with strategies: {[s[0] for s in strategies]}")
         
         with ThreadPoolExecutor(max_workers=4) as executor:
-            for name, strategy_func in strategies:
+            for name, strategy_instance in strategies:
                 logger.info(f"Running strategy: {name}")
                 
                 # Submit all tasks for this strategy
                 future_to_item = {
-                    executor.submit(self._process_single_item, item, name, strategy_func): item 
+                    executor.submit(self._process_single_item, item, name, strategy_instance): item 
                     for item in self.dataset
                 }
                 
                 for future in tqdm(as_completed(future_to_item), total=len(self.dataset), desc=name):
-                    result = future.result()
-                    results.append(result)
+                    try:
+                        result = future.result()
+                        results.append(result)
+                    except Exception as e:
+                        logger.error(f"Error processing item for strategy {name}: {e}")
 
         df = pd.DataFrame(results)
         self._save_results(df)
         return df
 
-    def _process_single_item(self, item: Dict[str, str], strategy_name: str, strategy_func) -> Dict[str, Any]:
+    def _process_single_item(self, item: Dict[str, str], strategy_name: str, strategy_instance: Any) -> Dict[str, Any]:
         """Process a single item with the given strategy."""
         start_time = time.time()
-        response = strategy_func(item)
+        response = strategy_instance.execute(item, self.llm)
         elapsed = time.time() - start_time
         
-        distance = self.evaluator.calculate_distance(response, item['answer'])
+        distance = self.evaluator.evaluate(response, item['answer'])
         
         return {
             "strategy": strategy_name,
@@ -89,31 +95,6 @@ class ExperimentRunner:
         config.paths.results.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(config.paths.results, index=False)
         logger.info(f"Results saved to {config.paths.results}")
-
-    # --- Strategies ---
-
-    def _strategy_baseline(self, item: Dict[str, str]) -> str:
-        """Raw prompt, no system message."""
-        return self.llm.generate(prompt=item['question'])
-
-    def _strategy_basic(self, item: Dict[str, str]) -> str:
-        """With specific system message."""
-        system_msg = "You are a logic expert. Answer the following syllogism question clearly and concisely. Start with 'Yes' or 'No'."
-        return self.llm.generate(prompt=item['question'], system=system_msg)
-
-    def _strategy_few_shot(self, item: Dict[str, str]) -> str:
-        """Includes examples in the prompt."""
-        prompt = "Here are some examples of logic puzzles:\n\n"
-        for ex in self.few_shot_examples:
-            prompt += f"{ex['question']}\nAnswer: {ex['answer']}\n\n"
-        
-        prompt += f"Now solve this one:\n{item['question']}\nAnswer:"
-        return self.llm.generate(prompt=prompt)
-
-    def _strategy_cot(self, item: Dict[str, str]) -> str:
-        """Chain of Thought prompting."""
-        prompt = f"{item['question']}\nLet's think step by step to derive the correct answer."
-        return self.llm.generate(prompt=prompt)
 
 if __name__ == "__main__":
     # Setup logging

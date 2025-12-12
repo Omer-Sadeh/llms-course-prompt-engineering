@@ -36,6 +36,15 @@ class TestSimilarityEvaluator:
         assert dist == 1.0
 
     @patch('src.utils.metrics.SentenceTransformer')
+    def test_evaluate(self, mock_st):
+        evaluator = SimilarityEvaluator()
+        # Mock encode to return dummy embeddings
+        mock_st.return_value.encode.return_value = np.array([[1, 0], [0, 1]])
+        
+        dist = evaluator.evaluate("text1", "text2")
+        assert dist == 1.0
+
+    @patch('src.utils.metrics.SentenceTransformer')
     def test_calculate_batch_distances(self, mock_st):
         evaluator = SimilarityEvaluator()
         

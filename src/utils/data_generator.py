@@ -3,7 +3,7 @@ Module for generating logic puzzle datasets (Syllogisms).
 """
 import random
 import json
-from typing import List, Dict, Any
+from typing import Any
 from pathlib import Path
 
 class SyllogismGenerator:
@@ -14,11 +14,11 @@ class SyllogismGenerator:
         random.seed(seed)
         
         # Simple knowledge base for template filling
-        self.subjects = ["cats", "dogs", "birds", "fish", "programmers", "philosophers"]
-        self.middle_terms = ["mammals", "animals", "living things", "logic users", "humans", "mortals"]
-        self.predicates = ["breathing", "warm-blooded", "capable of thought", "destined to die", "part of nature"]
+        self.subjects: list[str] = ["cats", "dogs", "birds", "fish", "programmers", "philosophers"]
+        self.middle_terms: list[str] = ["mammals", "animals", "living things", "logic users", "humans", "mortals"]
+        self.predicates: list[str] = ["breathing", "warm-blooded", "capable of thought", "destined to die", "part of nature"]
 
-    def generate_valid_syllogism(self) -> Dict[str, str]:
+    def generate_valid_syllogism(self) -> dict[str, str]:
         """Generates a valid syllogism (Yes answer)."""
         s = random.choice(self.subjects)
         m = random.choice(self.middle_terms)
@@ -32,7 +32,7 @@ class SyllogismGenerator:
             "label": "Yes"
         }
 
-    def generate_invalid_syllogism(self) -> Dict[str, str]:
+    def generate_invalid_syllogism(self) -> dict[str, str]:
         """Generates an invalid/indeterminate syllogism (No answer)."""
         s = random.choice(self.subjects)
         m = random.choice(self.middle_terms)
@@ -46,9 +46,9 @@ class SyllogismGenerator:
             "label": "No"
         }
 
-    def generate_dataset(self, size: int = 20) -> List[Dict[str, str]]:
+    def generate_dataset(self, size: int = 20) -> list[dict[str, str]]:
         """Generates a balanced dataset of valid and invalid syllogisms."""
-        dataset = []
+        dataset: list[dict[str, str]] = []
         for _ in range(size // 2):
             dataset.append(self.generate_valid_syllogism())
             dataset.append(self.generate_invalid_syllogism())
@@ -56,7 +56,7 @@ class SyllogismGenerator:
         random.shuffle(dataset)
         return dataset
 
-    def save_dataset(self, dataset: List[Dict[str, str]], filepath: Path) -> None:
+    def save_dataset(self, dataset: list[dict[str, str]], filepath: Path) -> None:
         """Saves the dataset to a JSON file."""
         filepath.parent.mkdir(parents=True, exist_ok=True)
         with open(filepath, 'w') as f:

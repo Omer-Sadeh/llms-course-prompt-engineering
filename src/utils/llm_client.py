@@ -6,7 +6,7 @@ import ollama
 import subprocess
 import time
 import sys
-from typing import Optional, Dict, Any, List
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class OllamaClient:
             The generated text response.
         """
         try:
-            options = {
+            options: dict[str, Any] = {
                 "temperature": self.temperature,
             }
             
@@ -88,7 +88,7 @@ class OllamaClient:
                 stream=False
             )
             
-            return response['response']
+            return str(response['response'])
             
         except Exception as e:
             logger.error(f"Error generating response from Ollama: {e}")
@@ -109,15 +109,15 @@ class OllamaClient:
             response = self.client.list()
             # logger.info(f"Ollama list response: {response}") # Uncomment for debugging
             
-            models = []
+            models: list[str] = []
             if 'models' in response:
                 for m in response['models']:
                     # m could be a dict or an object
                     if isinstance(m, dict):
-                        models.append(m.get('name', m.get('model', str(m))))
+                        models.append(str(m.get('name', m.get('model', str(m)))))
                     else:
                         # Try to access 'name' or 'model' attribute if it's an object
-                        models.append(getattr(m, 'name', getattr(m, 'model', str(m))))
+                        models.append(str(getattr(m, 'name', getattr(m, 'model', str(m)))))
             return models
         except Exception as e:
             logger.error(f"Failed to list models: {e}")

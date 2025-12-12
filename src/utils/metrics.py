@@ -6,11 +6,15 @@ import numpy as np
 from typing import List, Union
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_distances
+from src.core.registry import metric_registry
 
 logger = logging.getLogger(__name__)
 
+@metric_registry.register("Cosine Similarity")
 class SimilarityEvaluator:
     """Evaluates text similarity using vector embeddings."""
+
+    name = "Cosine Similarity"
 
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
         """
@@ -25,6 +29,10 @@ class SimilarityEvaluator:
         except Exception as e:
             logger.error(f"Failed to load embedding model {model_name}: {e}")
             raise
+
+    def evaluate(self, prediction: str, reference: str) -> float:
+        """Alias for calculate_distance to satisfy MetricEvaluator protocol."""
+        return self.calculate_distance(prediction, reference)
 
     def calculate_distance(self, text1: str, text2: str) -> float:
         """

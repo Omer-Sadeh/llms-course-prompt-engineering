@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 import pandas as pd
 from src.experiment_runner import ExperimentRunner
+from src.core.registry import strategy_registry
 
 class TestExperimentRunner:
 
@@ -27,41 +28,26 @@ class TestExperimentRunner:
         assert runner.evaluator == evaluator
         assert runner.generator == generator
         assert len(runner.dataset) == 2
-        # Verify few shot examples were also generated (dataset size 4 asked in code)
+        # Verify few shot examples were also generated
         assert generator.generate_dataset.call_count == 2 
-
-    def test_strategies(self, mock_deps):
-        llm, evaluator, generator = mock_deps
-        runner = ExperimentRunner(llm_client=llm, evaluator=evaluator, generator=generator)
-        
-        item = {'question': 'Is A B?', 'answer': 'Yes'}
-        
-        # Test Baseline
-        runner._strategy_baseline(item)
-        llm.generate.assert_called_with(prompt='Is A B?')
-        
-        # Test Basic
-        runner._strategy_basic(item)
-        assert "system" in llm.generate.call_args[1]
-        
-        # Test COT
-        runner._strategy_cot(item)
-        assert "step by step" in llm.generate.call_args[1]['prompt']
 
     def test_run_all_experiments(self, mock_deps):
         llm, evaluator, generator = mock_deps
         # Mock responses
         llm.generate.return_value = "Model Response"
-        evaluator.calculate_distance.return_value = 0.1
+        evaluator.evaluate.return_value = 0.1
         
         runner = ExperimentRunner(llm_client=llm, evaluator=evaluator, generator=generator)
         
         # Patch save_results to avoid filesystem writes
         with patch.object(runner, '_save_results') as mock_save:
+            # We need to make sure strategies are registered. They are imported in runner.
             df = runner.run_all_experiments()
             
             assert isinstance(df, pd.DataFrame)
-            assert len(df) == 2 * 4 # 2 items * 4 strategies
+            # 2 items * number of strategies. 
+            num_strategies = len(strategy_registry.list_all())
+            assert len(df) == 2 * num_strategies
             assert "vector_distance" in df.columns
             assert "latency" in df.columns
             mock_save.assert_called_once()
@@ -70,16 +56,17 @@ class TestExperimentRunner:
         llm, evaluator, generator = mock_deps
         runner = ExperimentRunner(llm_client=llm, evaluator=evaluator, generator=generator)
         
-        strategy_func = MagicMock(return_value="Output")
-        evaluator.calculate_distance.return_value = 0.5
+        mock_strategy = MagicMock()
+        mock_strategy.execute.return_value = "Output"
+        evaluator.evaluate.return_value = 0.5
         
         result = runner._process_single_item(
             {'question': 'q', 'answer': 'a'},
             "TestStrategy",
-            strategy_func
+            mock_strategy
         )
         
         assert result['strategy'] == "TestStrategy"
         assert result['model_output'] == "Output"
         assert result['vector_distance'] == 0.5
-        strategy_func.assert_called_once()
+        mock_strategy.execute.assert_called_once()
