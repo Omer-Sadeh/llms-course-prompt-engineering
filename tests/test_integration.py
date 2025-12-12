@@ -1,13 +1,16 @@
 """
 Integration tests for the Prompt Engineering Analysis workflow.
 """
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import MagicMock, patch
+
+from src.config.config import config
 from src.experiment_runner import ExperimentRunner
+from src.utils.data_generator import SyllogismGenerator
 from src.utils.llm_client import OllamaClient
 from src.utils.metrics import SimilarityEvaluator
-from src.utils.data_generator import SyllogismGenerator
-from src.config.config import config
+
 
 @pytest.fixture
 def mock_llm_client():

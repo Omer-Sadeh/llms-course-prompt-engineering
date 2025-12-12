@@ -1,8 +1,11 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
 import pandas as pd
-from src.experiment_runner import ExperimentRunner
+import pytest
+
 from src.core.registry import strategy_registry
+from src.experiment_runner import ExperimentRunner
+
 
 class TestExperimentRunner:
 

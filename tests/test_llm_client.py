@@ -1,6 +1,9 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from src.utils.llm_client import OllamaClient, start_ollama_server
+
 
 class TestOllamaClient:
     
@@ -16,12 +19,13 @@ class TestOllamaClient:
         assert client.model == "test-model"
         assert client.temperature == 0.5
         # Verify the client library was initialized with the host
-        from src.utils.llm_client import ollama
         # Note: Depending on implementation, we check if ollama.Client was called
         # The code does: self.client = ollama.Client(host=base_url)
         # So we can check that.
 
-    def test_generate_success(self, mock_ollama_client):
+    @patch.object(OllamaClient, '_load_cache', return_value={})
+    @patch.object(OllamaClient, '_save_cache')
+    def test_generate_success(self, mock_save, mock_load, mock_ollama_client):
         client = OllamaClient()
         # Mock the internal client's generate method
         client.client.generate.return_value = {'response': 'Test response'}
@@ -35,7 +39,8 @@ class TestOllamaClient:
         assert args['system'] == "Sys"
         assert args['options']['temperature'] == 0.0
 
-    def test_generate_failure(self, mock_ollama_client):
+    @patch.object(OllamaClient, '_load_cache', return_value={})
+    def test_generate_failure(self, mock_load, mock_ollama_client):
         client = OllamaClient()
         client.client.generate.side_effect = Exception("API Error")
         

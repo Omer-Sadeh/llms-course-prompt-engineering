@@ -1,4 +1,5 @@
-from typing import Protocol, Dict, Any, runtime_checkable
+from typing import Any, Dict, Protocol, runtime_checkable
+
 
 @runtime_checkable
 class PromptStrategy(Protocol):

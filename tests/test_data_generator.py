@@ -1,5 +1,5 @@
-import pytest
 from src.utils.data_generator import SyllogismGenerator
+
 
 def test_dataset_structure():
     gen = SyllogismGenerator(seed=42)

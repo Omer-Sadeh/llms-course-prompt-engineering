@@ -1,44 +1,49 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main, master ]
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11"]
 
     steps:
     - uses: actions/checkout@v3
-
+    
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-
+        
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install ruff pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
+        pip install ruff black pytest pytest-cov bandit
+        
     - name: Lint with Ruff
       run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        ruff check src tests --select E9,F63,F7,F82 --target-version py310
-        # Exit with zero even if there are warnings (for now)
-        ruff check src tests --exit-zero
-
-    - name: Test with pytest
+        ruff check .
+        
+    - name: Check formatting with Black
       run: |
-        pytest --cov=src --cov-report=xml tests/
-
-    - name: Upload coverage reports to Codecov
+        black --check .
+        
+    - name: Security scan with Bandit
+      run: |
+        bandit -r src/ -ll
+        
+    - name: Run tests with coverage
+      run: |
+        pytest --cov=src tests/ --cov-report=xml
+        
+    - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      with:
+        fail_ci_if_error: false

@@ -1,6 +1,7 @@
-from typing import Dict, List, Any
-from src.core.interfaces import PromptStrategy
+from typing import Any, Dict, List
+
 from src.core.registry import strategy_registry
+
 
 @strategy_registry.register("Baseline (Zero-Shot)")
 class BaselineStrategy:
@@ -42,4 +43,20 @@ class CoTStrategy:
 
     def execute(self, item: Dict[str, Any], llm_client: Any) -> str:
         prompt = f"{item['question']}\nLet's think step by step to derive the correct answer."
+        return llm_client.generate(prompt=prompt)
+
+@strategy_registry.register("Self-Consistency")
+class SelfConsistencyStrategy:
+    name = "Self-Consistency"
+    description = "Generates multiple CoT paths and selects the most frequent answer (Simulated with single path for now)."
+
+    def execute(self, item: Dict[str, Any], llm_client: Any) -> str:
+        # In a full implementation, we would generate k samples. 
+        # For this prototype, we emphasize the instruction to be robust.
+        prompt = (
+            f"{item['question']}\n"
+            "Think through this step-by-step. "
+            "Double check your reasoning to ensure it is absolutely correct. "
+            "Answer:"
+        )
         return llm_client.generate(prompt=prompt)

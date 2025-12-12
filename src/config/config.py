@@ -1,11 +1,11 @@
 """
 Configuration loader module.
 """
-import yaml
 import logging
 from pathlib import Path
-from typing import Optional
-from pydantic import BaseModel, Field, field_validator, ValidationError
+
+import yaml
+from pydantic import BaseModel, Field, ValidationError
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).parent.parent.parent

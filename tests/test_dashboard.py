@@ -1,8 +1,9 @@
-import pytest
-from unittest.mock import MagicMock, patch
-import sys
-import pandas as pd
 import runpy
+import sys
+from unittest.mock import MagicMock, patch
+
+import pandas as pd
+
 
 class TestDashboard:
     

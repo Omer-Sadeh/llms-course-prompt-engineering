@@ -87,6 +87,25 @@ You can easily add new strategies or metrics. See [docs/EXTENSIBILITY.md](docs/E
 ## Costs
 See [COSTS.md](COSTS.md) for a breakdown of estimated resource usage and costs.
 
+## Quality Checks
+This project uses several tools to ensure code quality:
+
+-   **Pre-commit Hooks**: Enforces checks before committing. Install with:
+    ```bash
+    pip install pre-commit
+    pre-commit install
+    ```
+-   **Linting**: Uses `ruff` for fast linting.
+-   **Formatting**: Uses `black` for code formatting.
+-   **Security**: Uses `bandit` for security scanning.
+
+Run checks manually:
+```bash
+ruff check .
+black --check .
+bandit -r src/
+```
+
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on code style and testing.
 

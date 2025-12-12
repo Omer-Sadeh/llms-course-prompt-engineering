@@ -2,18 +2,19 @@
 Experiment Runner Module.
 """
 import logging
-import pandas as pd
-from typing import List, Dict, Any, Optional
-from tqdm import tqdm
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any, Dict, Optional
+
+import pandas as pd
+from tqdm import tqdm
 
 from src.config.config import config
+from src.core.registry import strategy_registry
+import src.strategies.definitions  # noqa: F401
+from src.utils.data_generator import SyllogismGenerator
 from src.utils.llm_client import OllamaClient
 from src.utils.metrics import SimilarityEvaluator
-from src.utils.data_generator import SyllogismGenerator
-from src.core.registry import strategy_registry
-import src.strategies.definitions  # Import to register strategies
 
 logger = logging.getLogger(__name__)
 

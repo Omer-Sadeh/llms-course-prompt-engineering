@@ -1,10 +1,10 @@
 """
 Module for generating logic puzzle datasets (Syllogisms).
 """
-import random
 import json
-from typing import Any
+import random
 from pathlib import Path
+
 
 class SyllogismGenerator:
     """Generates syllogism problems with ground truth."""

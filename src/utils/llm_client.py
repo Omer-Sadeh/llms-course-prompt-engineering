@@ -1,12 +1,15 @@
 """
 Ollama Client Wrapper.
 """
+import hashlib
+import json
 import logging
-import ollama
 import subprocess
 import time
-import sys
-from typing import Any, Optional
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import ollama
 
 logger = logging.getLogger(__name__)
 
@@ -50,11 +53,16 @@ def start_ollama_server(max_retries: int = 5) -> bool:
         return False
 
 class OllamaClient:
-    """Wrapper for Ollama API interaction."""
+    """Wrapper for Ollama API interaction with Caching."""
 
-    def __init__(self, model: str = "llama3", temperature: float = 0.0, base_url: str = "http://localhost:11434"):
+    def __init__(self, model: str = "llama3", temperature: float = 0.0, base_url: str = "http://localhost:11434", cache_dir: str = ".cache"):
         self.model = model
         self.temperature = temperature
+        self.cache_dir = Path(cache_dir)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.cache_file = self.cache_dir / "llm_cache.json"
+        self.cache = self._load_cache()
+
         # The official python client uses OLLAMA_HOST env var, but we can also set it if needed.
         # For now, we rely on the default behavior or env vars.
         # If we needed to change the host, we would use ollama.Client(host=base_url)
@@ -64,9 +72,30 @@ class OllamaClient:
             logger.warning(f"Failed to initialize Ollama Client with specific host: {e}. Using default.")
             self.client = ollama
 
+    def _load_cache(self) -> Dict[str, str]:
+        if self.cache_file.exists():
+            try:
+                with open(self.cache_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.warning(f"Failed to load cache: {e}")
+                return {}
+        return {}
+
+    def _save_cache(self):
+        try:
+            with open(self.cache_file, 'w') as f:
+                json.dump(self.cache, f, indent=2)
+        except Exception as e:
+            logger.warning(f"Failed to save cache: {e}")
+
+    def _get_cache_key(self, prompt: str, system: Optional[str]) -> str:
+        key_content = f"{self.model}_{self.temperature}_{prompt}_{system}"
+        return hashlib.md5(key_content.encode()).hexdigest()
+
     def generate(self, prompt: str, system: Optional[str] = None) -> str:
         """
-        Generates a response from the model.
+        Generates a response from the model with caching.
 
         Args:
             prompt: The user prompt.
@@ -75,6 +104,11 @@ class OllamaClient:
         Returns:
             The generated text response.
         """
+        cache_key = self._get_cache_key(prompt, system)
+        if cache_key in self.cache:
+            logger.info("Cache hit for prompt.")
+            return self.cache[cache_key]
+
         try:
             options: dict[str, Any] = {
                 "temperature": self.temperature,
@@ -88,7 +122,10 @@ class OllamaClient:
                 stream=False
             )
             
-            return str(response['response'])
+            result = str(response['response'])
+            self.cache[cache_key] = result
+            self._save_cache()
+            return result
             
         except Exception as e:
             logger.error(f"Error generating response from Ollama: {e}")
@@ -99,7 +136,7 @@ class OllamaClient:
         try:
             self.client.list()
             return True
-        except Exception as e:
+        except Exception:
             # logger.error(f"Ollama connection failed: {e}") # Reduce noise during startup check
             return False
 

@@ -2,10 +2,11 @@
 Analysis and Visualization Module.
 """
 import logging
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 from src.config.config import config
 
@@ -45,7 +46,7 @@ class ResultAnalyzer:
         ax.set_ylabel('Cosine Distance')
         plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.savefig(self.output_dir / "mean_distance_comparison.png")
+        plt.savefig(self.output_dir / "mean_distance_comparison.png", dpi=300)
         plt.close()
 
         # 2. Violin Plot / Box Plot for Distribution
@@ -55,7 +56,7 @@ class ResultAnalyzer:
 
         plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.savefig(self.output_dir / "distance_distribution.png")
+        plt.savefig(self.output_dir / "distance_distribution.png", dpi=300)
         plt.close()
 
         logger.info(f"Analysis complete. Figures saved to {self.output_dir}")

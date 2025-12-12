@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
-import numpy as np
+import seaborn as sns
 
 # Create dummy data if real data doesn't exist or just for the screenshot
 data = {

@@ -1,7 +1,9 @@
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import MagicMock, patch
-import sys
+
 from src.main import main
+
 
 class TestMain:
 

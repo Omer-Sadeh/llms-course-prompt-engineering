@@ -1,9 +1,9 @@
 """
 Benchmark script to measure threading performance vs sequential execution.
 """
-import time
-import logging
 import json
+import logging
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import List

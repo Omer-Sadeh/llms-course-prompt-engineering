@@ -2,20 +2,20 @@
 Script to run comprehensive sensitivity analysis varying temperature, dataset size, worker count, and embedding models.
 """
 import logging
-import pandas as pd
-from pathlib import Path
-import sys
 import os
+import sys
 import time
+
+import pandas as pd
 
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.experiment_runner import ExperimentRunner
 from src.config.config import config
+from src.experiment_runner import ExperimentRunner
+from src.utils.data_generator import SyllogismGenerator
 from src.utils.llm_client import OllamaClient
 from src.utils.metrics import SimilarityEvaluator
-from src.utils.data_generator import SyllogismGenerator
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

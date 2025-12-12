@@ -1,19 +1,19 @@
 """
 Main Entry Point.
 """
-import logging
-import sys
-import os
 import argparse
-from typing import Optional, List
+import logging
+import os
+import sys
+from typing import Optional
 
 # Add project root to path to allow running as a script
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.experiment_runner import ExperimentRunner
 from src.analysis import ResultAnalyzer
-from src.utils.llm_client import OllamaClient, start_ollama_server
 from src.config.config import config
+from src.experiment_runner import ExperimentRunner
+from src.utils.llm_client import OllamaClient, start_ollama_server
 
 logging.basicConfig(
     level=logging.INFO,
@@ -69,8 +69,8 @@ def select_model(client: OllamaClient) -> None:
 def run_experiments(client: OllamaClient) -> None:
     """Instantiates dependencies and runs experiments."""
     try:
-        from src.utils.metrics import SimilarityEvaluator
         from src.utils.data_generator import SyllogismGenerator
+        from src.utils.metrics import SimilarityEvaluator
         
         # Instantiate dependencies
         evaluator = SimilarityEvaluator(model_name=config.experiment.embedding_model)

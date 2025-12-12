@@ -1,5 +1,5 @@
-from typing import Dict, Type, TypeVar, Generic, List, Optional
 import logging
+from typing import Dict, Generic, List, Optional, Type, TypeVar
 
 logger = logging.getLogger(__name__)
 

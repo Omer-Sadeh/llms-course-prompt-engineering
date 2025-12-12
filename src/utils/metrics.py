@@ -2,10 +2,11 @@
 Metrics module for calculating vector distances between texts.
 """
 import logging
-import numpy as np
-from typing import List, Union
+from typing import List
+
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_distances
+
 from src.core.registry import metric_registry
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,6 @@ class SimilarityEvaluator:
             raise ValueError("Predictions and references must have the same length.")
             
         distances = []
-        for pred, ref in zip(predictions, references):
+        for pred, ref in zip(predictions, references, strict=False):
             distances.append(self.calculate_distance(pred, ref))
-            
         return distances

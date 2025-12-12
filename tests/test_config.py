@@ -1,5 +1,6 @@
 from src.config.config import Config
 
+
 def test_config_loading():
     # This might fail if the file doesn't exist, but we created it.
     config = Config.load("config/settings.yaml")

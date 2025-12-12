@@ -1,5 +1,7 @@
 import pytest
+
 from src.core.registry import Registry
+
 
 def test_registry_basic():
     registry = Registry[int]("Test")

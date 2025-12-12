@@ -1,7 +1,10 @@
-import pytest
-from unittest.mock import MagicMock, patch
-from src.utils.metrics import SimilarityEvaluator
+from unittest.mock import patch
+
 import numpy as np
+import pytest
+
+from src.utils.metrics import SimilarityEvaluator
+
 
 class TestSimilarityEvaluator:
 
@@ -14,7 +17,7 @@ class TestSimilarityEvaluator:
     @patch('src.utils.metrics.SentenceTransformer')
     def test_init_failure(self, mock_st):
         mock_st.side_effect = Exception("Load failed")
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match="Load failed"):
             SimilarityEvaluator()
 
     @patch('src.utils.metrics.SentenceTransformer')
