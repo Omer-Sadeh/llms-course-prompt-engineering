@@ -1,0 +1,14 @@
+llm:
+  model: "llama3.2:latest"
+  temperature: 0.0
+  base_url: "http://localhost:11434"
+
+experiment:
+  dataset_size: 20
+  seed: 42
+  embedding_model: "all-MiniLM-L6-v2"
+
+paths:
+  data: "data/dataset.json"
+  results: "results/experiments.csv"
+  figures: "results/figures/"
