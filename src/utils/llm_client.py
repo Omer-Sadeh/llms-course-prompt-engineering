@@ -128,8 +128,16 @@ class OllamaClient:
             return result
             
         except Exception as e:
-            logger.error(f"Error generating response from Ollama: {e}")
-            return f"Error: {e}"
+            error_msg = str(e)
+            if "Connection refused" in error_msg or "Failed to establish a new connection" in error_msg:
+                actionable_msg = f"Error: Could not connect to Ollama at {self.client._client.base_url}. Please ensure 'ollama serve' is running."
+            elif "model" in error_msg and "not found" in error_msg:
+                 actionable_msg = f"Error: Model '{self.model}' not found. Please run 'ollama pull {self.model}' to download it."
+            else:
+                actionable_msg = f"Error: Failed to generate response. Details: {error_msg}"
+            
+            logger.error(actionable_msg)
+            return actionable_msg
 
     def check_connection(self) -> bool:
         """Checks if the Ollama server is reachable."""

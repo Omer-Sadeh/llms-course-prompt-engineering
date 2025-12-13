@@ -45,7 +45,8 @@ class TestOllamaClient:
         client.client.generate.side_effect = Exception("API Error")
         
         response = client.generate("Hello")
-        assert "Error: API Error" in response
+        assert "Failed to generate response" in response
+        assert "API Error" in response
 
     def test_check_connection_success(self, mock_ollama_client):
         client = OllamaClient()

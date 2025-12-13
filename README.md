@@ -43,6 +43,29 @@ The project is configured via `config/settings.yaml`. You can copy `config/setti
 
 See [config/settings.yaml.example](config/settings.yaml.example) for a full example.
 
+### Configuration Recipes
+
+**1. Use a Different Model**
+To use a different model (e.g., Mistral), first pull it via Ollama, then update `config/settings.yaml`:
+```yaml
+llm:
+  model: "mistral"
+```
+
+**2. Adjust Creativity (Temperature)**
+To make the model more deterministic (good for logic) or creative:
+```yaml
+llm:
+  temperature: 0.1  # More deterministic
+```
+
+**3. Speed Up Experiments**
+For quick testing, reduce the dataset size:
+```yaml
+experiment:
+  dataset_size: 5
+```
+
 ## Usage
 Run the main experiment script:
 ```bash
